@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.ws.client.WebServiceIOException;
 
 @Configuration
 public class JsonServiceConfig {
@@ -63,7 +64,14 @@ public class JsonServiceConfig {
         @ResponseStatus(HttpStatus.BAD_REQUEST)
         @ResponseBody
         public Map<String, String> handleValidationError(MethodArgumentNotValidException ex) {
-            return Map.of("message", "Шаардлагатай талбаруудыг зөв бөглөнө үү.");
+            return Map.of("message", "Shaardlagatai talbaruudiig zuv boglono uu.");
+        }
+
+        @ExceptionHandler(WebServiceIOException.class)
+        @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+        @ResponseBody
+        public Map<String, String> handleSoapConnectionError(WebServiceIOException ex) {
+            return Map.of("message", "Auth service tur holbogdohgui baina.");
         }
     }
 }

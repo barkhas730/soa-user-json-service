@@ -5,6 +5,10 @@ import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Service;
 import org.springframework.ws.client.core.WebServiceTemplate;
 
+import com.lab06.userjsonservice.soap.LoginUserRequest;
+import com.lab06.userjsonservice.soap.LoginUserResponse;
+import com.lab06.userjsonservice.soap.RegisterUserRequest;
+import com.lab06.userjsonservice.soap.RegisterUserResponse;
 import com.lab06.userjsonservice.soap.GetUserIdByTokenRequest;
 import com.lab06.userjsonservice.soap.GetUserIdByTokenResponse;
 import com.lab06.userjsonservice.soap.ValidateTokenRequest;
@@ -19,6 +23,22 @@ public class SoapAuthClient {
                           @Value("${soap.service.url:http://localhost:8081/ws}") String soapServiceUrl) {
         this.webServiceTemplate = new WebServiceTemplate(marshaller);
         this.webServiceTemplate.setDefaultUri(soapServiceUrl);
+    }
+
+    public String registerUser(String username, String password) {
+        RegisterUserRequest request = new RegisterUserRequest();
+        request.setUsername(username);
+        request.setPassword(password);
+        RegisterUserResponse response = (RegisterUserResponse) webServiceTemplate.marshalSendAndReceive(request);
+        return response.getMessage();
+    }
+
+    public LoginResult loginUser(String username, String password) {
+        LoginUserRequest request = new LoginUserRequest();
+        request.setUsername(username);
+        request.setPassword(password);
+        LoginUserResponse response = (LoginUserResponse) webServiceTemplate.marshalSendAndReceive(request);
+        return new LoginResult(response.getMessage(), response.getToken(), response.getUserId());
     }
 
     public boolean validateToken(String token) {
@@ -38,5 +58,8 @@ public class SoapAuthClient {
         }
 
         return null;
+    }
+
+    public record LoginResult(String message, String token, Long userId) {
     }
 }
