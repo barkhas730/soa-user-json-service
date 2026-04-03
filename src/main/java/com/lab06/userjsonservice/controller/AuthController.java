@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.lab06.userjsonservice.dto.AuthRequest;
+import com.lab06.userjsonservice.exception.UnauthorizedException;
 import com.lab06.userjsonservice.service.SoapAuthClient;
 
 import jakarta.validation.Valid;
@@ -48,7 +49,7 @@ public class AuthController {
     @GetMapping("/validate")
     public ResponseEntity<Map<String, Object>> validate(@RequestHeader("Authorization") String authorization) {
         if (authorization == null || !authorization.startsWith("Bearer ")) {
-            throw new IllegalArgumentException("Authorization header baihgui baina.");
+            throw new UnauthorizedException("Authorization header baihgui baina.");
         }
 
         String token = authorization.substring(7);

@@ -19,16 +19,16 @@ public class ProfileService {
 
     public UserProfile createProfile(UserProfileRequest request) {
         if (userProfileRepository.findByUserId(request.getUserId()).isPresent()) {
-            throw new IllegalArgumentException("Энэ хэрэглэгч аль хэдийн профайлтай байна.");
+            throw new IllegalArgumentException("Ene hereglegch ali hediin profiltoi baina.");
         }
 
         UserProfile profile = new UserProfile();
         profile.setUserId(request.getUserId());
-        profile.setName(request.getName());
-        profile.setEmail(request.getEmail());
-        profile.setBio(request.getBio());
-        profile.setPhone(request.getPhone());
-        profile.setImageUrl(request.getImageUrl());
+        profile.setName(normalizeRequired(request.getName(), "Ner oruulna uu."));
+        profile.setEmail(normalizeRequired(request.getEmail(), "Email oruulna uu."));
+        profile.setBio(normalizeOptional(request.getBio()));
+        profile.setPhone(normalizeOptional(request.getPhone()));
+        profile.setImageUrl(normalizeOptional(request.getImageUrl()));
         return userProfileRepository.save(profile);
     }
 
@@ -42,24 +42,41 @@ public class ProfileService {
 
     public UserProfile updateProfile(Long id, UserProfileRequest request) {
         UserProfile profile = userProfileRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Профайл олдсонгүй."));
+                .orElseThrow(() -> new IllegalArgumentException("Profil oldsongui."));
 
         if (!profile.getUserId().equals(request.getUserId())) {
-            throw new IllegalArgumentException("Энэ профайл танд хамаарахгүй.");
+            throw new IllegalArgumentException("Ene profil tand hamaarahgui.");
         }
 
-        profile.setName(request.getName());
-        profile.setEmail(request.getEmail());
-        profile.setBio(request.getBio());
-        profile.setPhone(request.getPhone());
-        profile.setImageUrl(request.getImageUrl());
+        profile.setName(normalizeRequired(request.getName(), "Ner oruulna uu."));
+        profile.setEmail(normalizeRequired(request.getEmail(), "Email oruulna uu."));
+        profile.setBio(normalizeOptional(request.getBio()));
+        profile.setPhone(normalizeOptional(request.getPhone()));
+        profile.setImageUrl(normalizeOptional(request.getImageUrl()));
         return userProfileRepository.save(profile);
     }
 
     public void deleteProfile(Long id) {
         if (!userProfileRepository.existsById(id)) {
-            throw new IllegalArgumentException("Профайл олдсонгүй.");
+            throw new IllegalArgumentException("Profil oldsongui.");
         }
         userProfileRepository.deleteById(id);
+    }
+
+    private String normalizeRequired(String value, String message) {
+        String normalized = normalizeOptional(value);
+        if (normalized == null || normalized.isBlank()) {
+            throw new IllegalArgumentException(message);
+        }
+        return normalized;
+    }
+
+    private String normalizeOptional(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        String normalized = value.trim();
+        return normalized.isEmpty() ? null : normalized;
     }
 }

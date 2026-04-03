@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.lab06.userjsonservice.dto.UserProfileRequest;
 import com.lab06.userjsonservice.entity.UserProfile;
+import com.lab06.userjsonservice.exception.UnauthorizedException;
 import com.lab06.userjsonservice.service.ProfileService;
 import com.lab06.userjsonservice.service.SoapAuthClient;
 
@@ -42,7 +43,7 @@ public class UserProfileController {
         Long tokenUserId = getUserIdFromAuthorization(authorization);
         if (!tokenUserId.equals(request.getUserId())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Та зөвхөн өөрийн профайлыг үүсгэх боломжтой."));
+                    .body(Map.of("message", "Ta zuvhun uuriin profil-iig uusgeh bolomjtoi."));
         }
 
         try {
@@ -61,12 +62,12 @@ public class UserProfileController {
                 .map(profile -> {
                     if (!profile.getUserId().equals(tokenUserId)) {
                         return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                                .body(Map.of("message", "Энэ профайл танд хамаарахгүй."));
+                                .body(Map.of("message", "Ene profil tand hamaarahgui."));
                     }
                     return ResponseEntity.ok(profile);
                 })
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("message", "Профайл олдсонгүй.")));
+                        .body(Map.of("message", "Profil oldsongui.")));
     }
 
     @GetMapping("/by-user")
@@ -75,13 +76,13 @@ public class UserProfileController {
         Long tokenUserId = getUserIdFromAuthorization(authorization);
         if (!tokenUserId.equals(userId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Энэ профайл танд хамаарахгүй."));
+                    .body(Map.of("message", "Ene profil tand hamaarahgui."));
         }
 
         UserProfile profile = profileService.getProfileByUserId(userId).orElse(null);
         if (profile == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("message", "Профайл олдсонгүй."));
+                    .body(Map.of("message", "Profil oldsongui."));
         }
 
         return ResponseEntity.ok(profile);
@@ -94,14 +95,15 @@ public class UserProfileController {
         Long tokenUserId = getUserIdFromAuthorization(authorization);
         if (!tokenUserId.equals(request.getUserId())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Та зөвхөн өөрийн профайлыг засах боломжтой."));
+                    .body(Map.of("message", "Ta zuvhun uuriin profil-iig zasah bolomjtoi."));
         }
 
         try {
             UserProfile updatedProfile = profileService.updateProfile(id, request);
             return ResponseEntity.ok(updatedProfile);
         } catch (IllegalArgumentException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", ex.getMessage()));
+            HttpStatus status = "Profil oldsongui.".equals(ex.getMessage()) ? HttpStatus.NOT_FOUND : HttpStatus.BAD_REQUEST;
+            return ResponseEntity.status(status).body(Map.of("message", ex.getMessage()));
         }
     }
 
@@ -112,32 +114,32 @@ public class UserProfileController {
 
         UserProfile profile = profileService.getProfileById(id).orElse(null);
         if (profile == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Профайл олдсонгүй."));
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Profil oldsongui."));
         }
 
         if (!profile.getUserId().equals(tokenUserId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Энэ профайл танд хамаарахгүй."));
+                    .body(Map.of("message", "Ene profil tand hamaarahgui."));
         }
 
         profileService.deleteProfile(id);
-        return ResponseEntity.ok(Map.of("message", "Профайл амжилттай устгагдлаа."));
+        return ResponseEntity.ok(Map.of("message", "Profil amjilttai ustgagdlaa."));
     }
 
     private Long getUserIdFromAuthorization(String authorization) {
         if (authorization == null || !authorization.startsWith("Bearer ")) {
-            throw new IllegalArgumentException("Authorization header байхгүй байна.");
+            throw new UnauthorizedException("Authorization header baihgui baina.");
         }
 
         String token = authorization.substring(7);
         boolean valid = soapAuthClient.validateToken(token);
         if (!valid) {
-            throw new IllegalArgumentException("Токен буруу эсвэл хүчингүй байна.");
+            throw new UnauthorizedException("Token buruu esvel huchingui baina.");
         }
 
         Long userId = soapAuthClient.getUserIdByToken(token);
         if (userId == null) {
-            throw new IllegalArgumentException("Энэ токентой хэрэглэгч олдсонгүй.");
+            throw new UnauthorizedException("Ene token-toi hereglegch oldsongui.");
         }
 
         return userId;

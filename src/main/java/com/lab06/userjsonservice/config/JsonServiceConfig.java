@@ -17,6 +17,8 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.ws.client.WebServiceIOException;
 
+import com.lab06.userjsonservice.exception.UnauthorizedException;
+
 @Configuration
 public class JsonServiceConfig {
 
@@ -54,9 +56,16 @@ public class JsonServiceConfig {
     static class GlobalExceptionHandler {
 
         @ExceptionHandler(IllegalArgumentException.class)
-        @ResponseStatus(HttpStatus.UNAUTHORIZED)
+        @ResponseStatus(HttpStatus.BAD_REQUEST)
         @ResponseBody
         public Map<String, String> handleIllegalArgument(IllegalArgumentException ex) {
+            return Map.of("message", ex.getMessage());
+        }
+
+        @ExceptionHandler(UnauthorizedException.class)
+        @ResponseStatus(HttpStatus.UNAUTHORIZED)
+        @ResponseBody
+        public Map<String, String> handleUnauthorized(UnauthorizedException ex) {
             return Map.of("message", ex.getMessage());
         }
 
