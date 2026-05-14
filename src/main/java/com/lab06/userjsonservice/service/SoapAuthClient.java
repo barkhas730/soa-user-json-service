@@ -5,12 +5,12 @@ import org.springframework.oxm.jaxb.Jaxb2Marshaller;
 import org.springframework.stereotype.Service;
 import org.springframework.ws.client.core.WebServiceTemplate;
 
+import com.lab06.userjsonservice.soap.GetUserIdByTokenRequest;
+import com.lab06.userjsonservice.soap.GetUserIdByTokenResponse;
 import com.lab06.userjsonservice.soap.LoginUserRequest;
 import com.lab06.userjsonservice.soap.LoginUserResponse;
 import com.lab06.userjsonservice.soap.RegisterUserRequest;
 import com.lab06.userjsonservice.soap.RegisterUserResponse;
-import com.lab06.userjsonservice.soap.GetUserIdByTokenRequest;
-import com.lab06.userjsonservice.soap.GetUserIdByTokenResponse;
 import com.lab06.userjsonservice.soap.ValidateTokenRequest;
 import com.lab06.userjsonservice.soap.ValidateTokenResponse;
 

@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.lab06.userjsonservice.dto.AuthRequest;
 import com.lab06.userjsonservice.exception.UnauthorizedException;
 import com.lab06.userjsonservice.service.SoapAuthClient;
+import com.lab06.userjsonservice.service.SoapAuthClient.LoginResult;
 
 import jakarta.validation.Valid;
 
@@ -34,16 +35,15 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody AuthRequest request) {
-        SoapAuthClient.LoginResult result = soapAuthClient.loginUser(request.getUsername(), request.getPassword());
+        LoginResult result = soapAuthClient.loginUser(request.getUsername(), request.getPassword());
         if (result.token() != null && result.userId() != null) {
             return ResponseEntity.ok(Map.of(
                     "message", result.message(),
                     "token", result.token(),
-                    "userId", result.userId()
-            ));
+                    "userId", result.userId()));
         }
 
-        return ResponseEntity.ok(Map.of("message", result.message()));
+        return ResponseEntity.status(401).body(Map.of("message", result.message()));
     }
 
     @GetMapping("/validate")
